@@ -22,7 +22,6 @@ export default function App() {
   useEffect(() => {
     fetch('https://api.github.com/users/helloparthshah/repos?per_page=100', {
       headers: {
-        'Authorization': 'token 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'
       }
     })
       .then((response) => response.json())
