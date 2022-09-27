@@ -6,6 +6,7 @@ import Floor from './Floor'
 import { OrbitControls, Scroll, ScrollControls, Text, PerspectiveCamera } from '@react-three/drei'
 import { Suspense, useEffect, useRef, useState } from 'react'
 import store from './store'
+import GitHubButton from 'react-github-btn'
 
 const Fallback = () => (
   <div class="loading">Loading...</div>
@@ -23,23 +24,40 @@ export default function App() {
       .then((response) => response.json())
       .then((data) => {
         let proj = [];
+        data.sort((a, b) => {
+          return a.stargazers_count < b.stargazers_count ? 1 : -1;
+        });
         for (let i = 0; i < data.length; i++) {
           if (data[i].has_pages) {
             proj.push(
               <div key={data[i].name} className={'page project'}>
-                <a href={`https://helloparthshah.github.io/${data[i].name}`}>
-                  <img
-                    src={`https://raw.githubusercontent.com/helloparthshah/${data[i].name}/gh-pages/image.png`}
-                    alt={data[i].name}
-                    onError={({ currentTarget }) => {
-                      currentTarget.onerror = null;
-                      currentTarget.src = "https://miro.medium.com/max/1000/1*SykPj2Btn7Tff_I9S_oPNA.png";
-                    }} />
-                </a>
+                <img
+                  className='project-image'
+                  src={`https://raw.githubusercontent.com/helloparthshah/${data[i].name}/gh-pages/image.png`}
+                  alt={data[i].name}
+                  onError={({ currentTarget }) => {
+                    currentTarget.onerror = null;
+                    currentTarget.src = "https://miro.medium.com/max/1000/1*SykPj2Btn7Tff_I9S_oPNA.png";
+                  }} />
                 <div className="project-info">
-                  <a href={`https://github.com/helloparthshah/${data[i].name}`}>
+                  <div className='project-name'>
                     <h1>{data[i].name}</h1>
-                  </a>
+                    <div className='project-links'>
+                      <a href={`https://github.com/helloparthshah/${data[i].name}`}>
+                        <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="github" />
+                      </a>
+                      <GitHubButton href={`https://github.com/helloparthshah/${data[i].name}`} data-color-scheme="no-preference: dark; light: dark; dark: dark;" data-icon="octicon-star" data-size='large' data-show-count="true" aria-label="Star helloparthshah/zdfzf on GitHub">Star</GitHubButton>
+                      {/* <a>
+                        <div className='stars'>
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Octicons-star.svg/896px-Octicons-star.svg.png" alt="github" />
+                          {data[i].stargazers_count}
+                        </div>
+                      </a> */}
+                      <a href={`https://helloparthshah.github.io/${data[i].name}`}>
+                        <img src="https://cdn2.iconfinder.com/data/icons/pittogrammi/142/95-512.png" alt="webpage" />
+                      </a>
+                    </div>
+                  </div>
                   {data[i].description}
                 </div>
               </div >
