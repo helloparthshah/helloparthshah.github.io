@@ -38,7 +38,7 @@ body {
 
 .page.project {
   justify-content: space-around;
-  height: 46vh;
+  height: calc(50vh - 4vw);
   width: 96vw;
   border: 1px solid white;
   border-radius: 10px;
@@ -70,7 +70,7 @@ body {
 
 @media only screen and (max-width: 768px) {
   .page.project {
-    height: 96vh;
+    height: calc(100vh - 4vw);
   }
 
   .page {
