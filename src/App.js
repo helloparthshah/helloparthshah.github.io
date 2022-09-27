@@ -28,9 +28,11 @@ export default function App() {
       .then((response) => response.json())
       .then((data) => {
         let proj = [];
-        data.sort((a, b) => {
-          return a.stargazers_count < b.stargazers_count ? 1 : -1;
-        });
+        if (data.length > 0) {
+          data.sort((a, b) => {
+            return a.stargazers_count < b.stargazers_count ? 1 : -1;
+          });
+        }
         for (let i = 0; i < data.length; i++) {
           if (data[i].has_pages) {
             proj.push(
