@@ -20,7 +20,11 @@ export default function App() {
   const [experience, setExperience] = useState([]);
 
   useEffect(() => {
-    fetch('https://api.github.com/users/helloparthshah/repos?per_page=100')
+    fetch('https://api.github.com/users/helloparthshah/repos?per_page=100', {
+      headers: {
+        'Authorization': 'token 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'
+      }
+    })
       .then((response) => response.json())
       .then((data) => {
         let proj = [];
