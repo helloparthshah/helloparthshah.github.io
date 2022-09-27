@@ -34,9 +34,11 @@ body {
   justify-content: center;
   align-items: center;
   color: white;
+  flex-direction: column;
 }
 
 .page.project {
+  flex-direction: row;
   justify-content: space-around;
   height: calc(50vh - 4vw);
   width: 96vw;
@@ -45,8 +47,66 @@ body {
   margin: 2vw;
 }
 
+.experience {
+  width: 96vw;
+  height: calc(25vh - 4vw);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  padding-left: 2%;
+  padding-right: 2%;
+  border: 1px solid white;
+  border-radius: 10px;
+  margin: 2vw;
+}
+
+.experience>div {
+  flex: 1 1 0px;
+}
+
+.company-logo {
+  flex: 0.5 0.5 0px !important;
+  text-align: center;
+}
+
+.experience img {
+  width: 5vw;
+  height: 5vw;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.company-logo {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.experience-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: flex-start;
+}
+
 .page h1 {
   font-size: 8rem;
+  text-align: center;
+}
+
+.exp {
+  height: 25vh;
+  line-height: 25vh;
+  font-size: 4rem;
+  text-align: center;
+}
+
+.projects h1 {
+  height: 25vh;
+  line-height: 25vh;
+  font-size: 4rem;
   text-align: center;
 }
 
@@ -68,8 +128,16 @@ body {
   align-items: center;
 }
 
+.links {
+  display: flex;
+  width: 100vw;
+  justify-content: space-around;
+  align-items: center;
+}
+
 @media only screen and (max-width: 768px) {
   .page.project {
+    flex-direction: column;
     height: calc(100vh - 4vw);
   }
 
@@ -85,5 +153,27 @@ body {
 
   .project-info {
     width: 80%;
+  }
+
+  .experience {
+    height: calc(50vh - 4vw);
+    flex-direction: column;
+    text-align: center;
+    padding: 2%;
+  }
+
+  .experience-info {
+    align-items: center;
+  }
+
+  .experience>div {
+    flex: 0 0 0px !important;
+  }
+
+  .experience img {
+    width: 5vh;
+    height: 5vh;
+    border-radius: 50%;
+    object-fit: cover;
   }
 }

@@ -16,6 +16,8 @@ export default function App() {
 
   const [projects, setProjects] = useState([]);
 
+  const [experience, setExperience] = useState([]);
+
   useEffect(() => {
     fetch('https://api.github.com/users/helloparthshah/repos?per_page=100')
       .then((response) => response.json())
@@ -44,15 +46,44 @@ export default function App() {
             );
           }
         }
-        // check if screen is mobile
-        if (window.innerWidth < 768) {
-          setPages(proj.length + 1);
-        } else {
-          setPages(Math.ceil(proj.length / 2) + 1);
-        }
         setProjects(proj);
+        let expList = [];
+
+        fetch('https://raw.githubusercontent.com/helloparthshah/resume/main/experience.json')
+          .then((response) => response.text())
+          .then((data) => {
+            // parse json
+            let exp = JSON.parse(data);
+            console.log(exp);
+            for (let i = 0; i < exp.length; i++) {
+              expList.push(
+                <div key={exp[i].company} className='experience'>
+                  <div className='company-logo'>
+                    <img src={exp[i].logo} />
+                    <h4>{exp[i].company}</h4>
+                  </div>
+                  <div className='experience-info'>
+                    <h2>{exp[i].post}</h2>
+                    <h3>{exp[i].start} - {exp[i].end}</h3>
+                  </div>
+                  <div>
+                    {exp[i].description}
+                  </div>
+                </div>
+              );
+            }
+            setExperience(expList);
+            if (window.innerWidth < 768) {
+              setPages(Math.ceil(proj.length + expList.length / 2 + 1.5));
+            } else {
+              setPages(Math.ceil(proj.length / 2 + expList.length / 4 + 1.5));
+              console.log(expList.length);
+              console.log(proj.length / 2 + expList.length / 4 + 1.5);
+            }
+          });
       });
   }, [])
+
   const html = useRef();
 
   return (
@@ -76,7 +107,7 @@ export default function App() {
           <Scroll html>
             <div className={'page'}>
               <h1>Parth Shah</h1>
-              <div>
+              <div className='links'>
                 <a href="https://github.com/helloparthshah">
                   <h2>
                     GitHub
@@ -87,9 +118,19 @@ export default function App() {
                     LinkedIn
                   </h2>
                 </a>
+                <a href="https://media-exp1.licdn.com/dms/document/C562DAQErdLnkvDfptw/profile-treasury-document-pdf-analyzed/0/1662602663927?e=1665014400&v=beta&t=YvUKGuTPcIvKsw-qroE9rrdUiahsKna7m6YdBtKjqQ8">
+                  <h2>
+                    Resume
+                  </h2>
+                </a>
               </div>
             </div>
+            <h1 className="exp">Experience</h1>
+            <div className={'experiences'}>
+              {experience}
+            </div>
             <div className='projects'>
+              <h1>Projects</h1>
               {projects}
             </div>
           </Scroll>
