@@ -3,8 +3,11 @@ import { DoubleSide } from 'three'
 import { useSpring, animated, config } from "@react-spring/three";
 import { useFrame, useThree } from '@react-three/fiber'
 import { useScroll } from '@react-three/drei'
+import store from './store'
 
 export default function Floor(props) {
+    const [pages, setPages] = store.useState("pages");
+
     const ref = useRef()
 
     const [hovered, hover] = useState(false)
@@ -18,9 +21,9 @@ export default function Floor(props) {
 
     const data = useScroll();
     useFrame(() => {
-        ref.current.position.y = -data.offset * height;
-        ref.current.scale.x = data.range(0, 1 / 2) * 15;
-        ref.current.scale.y = data.range(0, 1 / 2) * 15;
+        ref.current.position.y = -data.offset * height * (pages - 1);
+        ref.current.scale.x = data.range(0, 1 / pages) * 3;
+        ref.current.scale.y = data.range(0, 1 / pages) * 3;
     });
 
     return (
@@ -31,8 +34,8 @@ export default function Floor(props) {
             onPointerOver={(event) => hover(true)}
             onPointerOut={(event) => hover(false)}>
             <circleGeometry args={[5, 100]} />
-            {/* <meshStandardMaterial attach="material" color="hotpink" side={DoubleSide} /> */}
-            <meshToonMaterial attach="material" color="hotpink" side={DoubleSide} />
+            <meshStandardMaterial attach="material" color="hotpink" side={DoubleSide} />
+            {/* <meshToonMaterial attach="material" color="hotpink" side={DoubleSide} /> */}
         </animated.mesh>
     )
 }

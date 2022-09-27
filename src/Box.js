@@ -2,8 +2,11 @@ import { useRef, useState } from 'react'
 import { useSpring, animated, config } from "@react-spring/three";
 import { useFrame, useThree } from '@react-three/fiber'
 import { useScroll } from '@react-three/drei'
+import store from './store'
 
 export default function Box(props) {
+    const [pages, setPages] = store.useState("pages");
+
     const ref = useRef()
     const [hovered, hover] = useState(false)
     const [clicked, click] = useState(false)
@@ -14,7 +17,7 @@ export default function Box(props) {
 
     const data = useScroll();
     useFrame(() => {
-        ref.current.position.y = -data.offset * height + 1;
+        ref.current.position.y = -data.offset * height * (pages - 1) + 1;
     });
 
     const { color } = useSpring({
@@ -26,11 +29,11 @@ export default function Box(props) {
         scale: clicked ? 1.5 : 1,
         config: config.wobbly
     });
-    // Return the view, these are regular Threejs elements expressed in JSX
     return (
         <animated.mesh
             {...props}
             castShadow
+            receiveShadow
             ref={ref}
             scale={scale}
             onClick={(event) => click(!clicked)}
