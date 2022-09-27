@@ -103,7 +103,7 @@ body {
   text-align: center;
 }
 
-.projects h1 {
+.projects>h1 {
   height: 25vh;
   line-height: 25vh;
   font-size: 4rem;
