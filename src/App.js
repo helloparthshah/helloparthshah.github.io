@@ -11,6 +11,7 @@ import Shapes from './Shapes'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
+import './styles.css'
 
 const Fallback = () => (
   <div class="loading">Loading...</div>

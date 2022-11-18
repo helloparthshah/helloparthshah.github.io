@@ -23,8 +23,8 @@ export default function Shapes(props) {
 
     const data = useScroll();
     useFrame((state, clock) => {
-        state.camera.position.x = state.mouse.x * 0.4 + 10;
-        state.camera.position.y = state.mouse.y * 0.4 + 10;
+        // state.camera.position.x = state.mouse.x * 0.4 + 10;
+        // state.camera.position.y = state.mouse.y * 0.4 + 10;
         // ref.current.position.y = -data.offset * height * (pages - 1)
         ref.current.position.y = -data.offset * height * (pages - 1) + data.range(0, 1 / pages) * 15 - 15;
         ref.current.scale.x = data.range(1 / pages, 3 / pages) * 5 + 1;
