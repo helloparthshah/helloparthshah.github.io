@@ -7,6 +7,10 @@ import { OrbitControls, Scroll, ScrollControls, Text, PerspectiveCamera } from '
 import { Suspense, useEffect, useRef, useState } from 'react'
 import store from './store'
 import GitHubButton from 'react-github-btn'
+import Shapes from './Shapes'
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
 
 const Fallback = () => (
   <div class="loading">Loading...</div>
@@ -71,7 +75,6 @@ export default function App() {
           .then((data) => {
             // parse json
             let exp = JSON.parse(data);
-            console.log(exp);
             for (let i = 0; i < exp.length; i++) {
               expList.push(
                 <div key={exp[i].company} className='experience'>
@@ -94,8 +97,6 @@ export default function App() {
               setPages(Math.ceil(proj.length + expList.length / 2 + 1.5));
             } else {
               setPages(Math.ceil(proj.length / 2 + expList.length / 4 + 1.5));
-              console.log(expList.length);
-              console.log(proj.length / 2 + expList.length / 4 + 1.5);
             }
           });
       });
@@ -103,12 +104,15 @@ export default function App() {
 
   const html = useRef();
 
+
+
   return (
     <Canvas shadows camera={{
       zoom: 4, position: [10, 10, 10]
     }}>
       <ambientLight intensity={0.5} />
-      <directionalLight castShadow
+      <directionalLight
+        castShadow
         shadow-mapSize-height={512}
         shadow-mapSize-width={512}
         intensity={0.5}
@@ -116,9 +120,10 @@ export default function App() {
       />
       <Suspense fallback={<Fallback />}>
         <ScrollControls pages={pages}>
-          <Scroll>
-            <Box position={[-1.2, 1, 0]} />
-            <Box position={[1.2, 1, 0]} />
+          <Scroll damping={10}>
+            <Shapes />
+            {/* <Box position={[-1.2, 1, 0]} /> */}
+            {/* <Box position={[1.2, 1, 0]} /> */}
             <Floor position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} />
           </Scroll>
           <Scroll html>
@@ -141,6 +146,26 @@ export default function App() {
                   </h2>
                 </a>
               </div>
+              <div className='mail-message' style={{ marginTop: '5%', width: '40%' }}>
+                <Form
+                  action="https://formspree.io/f/xvoyyool"
+                  method="POST">
+                  <Form.Group controlId="formBasicEmail">
+                    <Form.Label>Your email address</Form.Label>
+                    <Form.Control type="email" name="email" placeholder="Enter email" />
+                    <Form.Text className="text-muted">
+                      I'll never share your email with anyone else.
+                    </Form.Text>
+                  </Form.Group>
+                  <Form.Group controlId="exampleForm.ControlTextarea1">
+                    <Form.Label>Message</Form.Label>
+                    <Form.Control name='message' as="textarea" rows={3} />
+                  </Form.Group>
+                  <Button variant="primary" type="submit">
+                    Submit
+                  </Button>
+                </Form>
+              </div>
             </div>
             <h1 className="exp">Experience</h1>
             <div className={'experiences'}>
@@ -153,7 +178,8 @@ export default function App() {
           </Scroll>
         </ScrollControls>
       </Suspense>
-      {/* <OrbitControls enabled={false} enableZoom={false} /> */}
+      {/* <OrbitControls enabled={true} enableZoom={true} /> */}
+      {/* mouse move parallax effect */}
     </Canvas >
   )
 }

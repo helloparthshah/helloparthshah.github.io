@@ -21,7 +21,7 @@ export default function Box(props) {
     });
 
     const { color } = useSpring({
-        color: hovered ? 'red' : 'orange',
+        color: hovered ? 'red' : '#a656a4',
         config: config.default
     })
 

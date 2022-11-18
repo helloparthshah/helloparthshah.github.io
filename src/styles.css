@@ -18,7 +18,8 @@ body,
 }
 
 body {
-  background: #41c6ff;
+  /* background: #41c6ff; */
+  background-image: linear-gradient(to bottom right, #c2a9c9, #8444af, #400f70, black);
 }
 
 .projects {
@@ -31,7 +32,7 @@ body {
 .page {
   height: 100vh;
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   align-items: center;
   color: white;
   flex-direction: column;
@@ -168,6 +169,11 @@ body {
   width: 100vw;
   justify-content: space-around;
   align-items: center;
+}
+
+#contact {
+  margin-right: 10%;
+  margin-left: 10%;
 }
 
 @media only screen and (max-width: 768px) {
