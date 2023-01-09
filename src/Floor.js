@@ -34,8 +34,8 @@ export default function Floor(props) {
             onPointerOver={(event) => hover(true)}
             onPointerOut={(event) => hover(false)}>
             <circleGeometry args={[5, 100]} />
-            <meshStandardMaterial attach="material" color="#202124" side={DoubleSide} />
-            {/* <meshToonMaterial attach="material" color="hotpink" side={DoubleSide} /> */}
+            {/* <meshStandardMaterial attach="material" color="#202124" side={DoubleSide} /> */}
+            <meshToonMaterial attach="material" color="#44C8E0" side={DoubleSide} />
         </animated.mesh>
     )
 }

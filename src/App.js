@@ -141,13 +141,22 @@ export default function App() {
                     LinkedIn
                   </h2>
                 </a>
-                <a href="https://media-exp1.licdn.com/dms/document/C562DAQErdLnkvDfptw/profile-treasury-document-pdf-analyzed/0/1662602663927?e=1665014400&v=beta&t=YvUKGuTPcIvKsw-qroE9rrdUiahsKna7m6YdBtKjqQ8">
+                <a href="https://github.com/helloparthshah/resume/blob/main/Resume.pdf">
                   <h2>
                     Resume
                   </h2>
                 </a>
               </div>
-              <div className='mail-message' style={{ marginTop: '5%', width: '40%' }}>
+            </div>
+            <h1 className="exp">Experience</h1>
+            <div className={'experiences'}>
+              {experience}
+            </div>
+            <div className='projects'>
+              <h1>Projects</h1>
+              {projects}
+            </div>
+            {/* <div className='mail-message' style={{ marginTop: '5%', width: '40%' }}>
                 <Form
                   action="https://formspree.io/f/xvoyyool"
                   method="POST">
@@ -166,21 +175,11 @@ export default function App() {
                     Submit
                   </Button>
                 </Form>
-              </div>
-            </div>
-            <h1 className="exp">Experience</h1>
-            <div className={'experiences'}>
-              {experience}
-            </div>
-            <div className='projects'>
-              <h1>Projects</h1>
-              {projects}
-            </div>
+              </div> */}
           </Scroll>
         </ScrollControls>
       </Suspense>
       {/* <OrbitControls enabled={true} enableZoom={true} /> */}
-      {/* mouse move parallax effect */}
     </Canvas >
   )
 }

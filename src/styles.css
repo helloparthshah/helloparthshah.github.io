@@ -1,7 +1,17 @@
+/* define variables */
+
+:root {
+  --primary-color: hotpink;
+  --secondary-color: #41c6ff;
+  --text-color: black;
+  --heading-color: white;
+  --border-color: white;
+}
+
 * {
   box-sizing: border-box;
   font-family: 'Roboto', sans-serif;
-  color: white;
+  color: var(--text-color);
 }
 
 a {
@@ -18,8 +28,9 @@ body,
 }
 
 body {
+  background: var(--primary-color);
   /* background: #41c6ff; */
-  background-image: linear-gradient(to bottom right, #c2a9c9, #8444af, #400f70, black);
+  /* background-image: linear-gradient(to bottom right, #c2a9c9, #8444af, #400f70, black); */
 }
 
 .projects {
@@ -32,10 +43,15 @@ body {
 .page {
   height: 100vh;
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
-  color: white;
+  color: var(--heading-color);
   flex-direction: column;
+}
+
+.page h1,
+.page h2 {
+  color: var(--heading-color);
 }
 
 .page.project {
@@ -43,7 +59,7 @@ body {
   justify-content: space-around;
   height: calc(50vh - 4vw);
   width: 96vw;
-  border: 1px solid white;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   margin: 2vw;
 }
@@ -57,7 +73,7 @@ body {
   align-items: center;
   padding-left: 2%;
   padding-right: 2%;
-  border: 1px solid white;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   margin: 2vw;
 }
@@ -169,6 +185,7 @@ body {
   width: 100vw;
   justify-content: space-around;
   align-items: center;
+  margin-top: 10%;
 }
 
 #contact {
