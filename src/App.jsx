@@ -168,6 +168,13 @@ export default function App() {
   );
 }
 
+// An <img> that walks through a project's candidate screenshots and hides itself if none load.
+function Shot({ urls, ...props }) {
+  const [i, setI] = useState(0);
+  if (!urls?.length || i >= urls.length) return null;
+  return <img key={urls[i]} src={urls[i]} alt="" {...props} onError={() => setI((n) => n + 1)} />;
+}
+
 function ListView({ projects, config, onOpen }) {
   return (
     <main className="list">
@@ -176,7 +183,7 @@ function ListView({ projects, config, onOpen }) {
       <div className="grid">
         {projects.map((p) => (
           <button key={p.id} type="button" className="card" onClick={() => onOpen(p)}>
-            {p.image && <img src={p.image} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} />}
+            <Shot urls={p.images} loading="lazy" />
             <span className="card-body">
               <strong>{p.title}</strong>
               <span className="sub">{p.dates}{p.stars ? <span className="stars"> · ★ {p.stars}</span> : null}</span>
@@ -196,7 +203,7 @@ function ProjectModal({ project, onClose }) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" role="dialog" aria-modal="true" aria-label={project.title} onClick={(e) => e.stopPropagation()}>
         <button ref={close} type="button" className="modal-close" onClick={onClose} aria-label="Close">×</button>
-        {project.image && <img src={project.image} alt="" onError={(e) => { e.currentTarget.style.display = "none"; }} />}
+        <Shot urls={project.images} />
         <div className="modal-body">
           <span className="label">{project.featured ? "Featured" : "GitHub Pages"}{project.dates ? ` · ${project.dates}` : ""}{project.stars ? ` · ★ ${project.stars}` : ""}</span>
           <h2>{project.title}</h2>

@@ -73,7 +73,11 @@ export async function loadData() {
           Live: r.homepage || `https://${SITE.github}.github.io/${r.name}`,
           GitHub: r.html_url,
         },
-        image: `https://raw.githubusercontent.com/${SITE.github}/${r.name}/gh-pages/image.png`,
+        // A screenshot is image.png on the gh-pages branch, or on the default branch for
+        // repos that deploy Pages from GitHub Actions instead.
+        images: [...new Set(["gh-pages", r.default_branch])]
+          .filter(Boolean)
+          .map((b) => `https://raw.githubusercontent.com/${SITE.github}/${r.name}/${b}/image.png`),
         stars: r.stargazers_count,
         featured: false,
       };
@@ -86,5 +90,10 @@ export async function loadData() {
     p.year = years.length ? Math.max(...years) : null;
   });
 
-  return { config, projects: [...featured, ...pages] };
+  // Every project exposes `images` (candidates, tried in order) and `image` (the first).
+  const all = [...featured, ...pages].map((p) => {
+    const images = p.images ?? (p.image ? [p.image] : []);
+    return { ...p, images, image: images[0] ?? null };
+  });
+  return { config, projects: all };
 }

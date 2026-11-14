@@ -72,8 +72,10 @@ export default function ProjectPanel({ project, index, position, side, size = [3
     if (Math.abs(camZ.current - position[2]) < 22) {
       setTexture("loading");
       const fallback = () => setTexture(placeholder(project.title));
-      if (!project.image) return fallback();
-      loadScreenshot(project.image)
+      if (!project.images.length) return fallback();
+      // Try each candidate screenshot in turn.
+      project.images
+        .reduce((p, url) => p.catch(() => loadScreenshot(url)), Promise.reject())
         .then((t) => { gl.initTexture(t); setTexture(t); })
         .catch(fallback);
     }

@@ -15,7 +15,7 @@ All particle motion runs in a vertex shader, so the CPU only updates a few unifo
 Nothing is hard-coded. On load the site reads:
 
 - `website.config.json` and `public/jsons/projects.json` from [modern-website](https://github.com/helloparthshah/modern-website) (featured projects, name, tagline, links), and
-- every repo of mine with GitHub Pages enabled, newest first, then by stars within a year. A repo's screenshot is `image.png` on its `gh-pages` branch.
+- every repo of mine with GitHub Pages enabled, newest first, then by stars within a year. A repo's screenshot is `image.png` on its `gh-pages` branch, or on its default branch for repos that deploy Pages from GitHub Actions.
 - star counts for featured projects from the repo behind their GitHub link (an organization link is matched by the project's name).
 
 Sources are set in `src/site.config.js`.
