@@ -5,10 +5,10 @@ import Particles from "./Particles";
 import ProjectPanel from "./ProjectPanel";
 import { buildFormations } from "./formations";
 
-// Scroll progress (0..1) is split into acts: hero, explode into the vortex,
-// fly past the projects, collapse into the name.
-export const ACTS = { hero: 0.06, explode: 0.14, tunnelEnd: 0.86, finale: 0.94 };
-
+// The scroll is a series of slides: the hero, one per project, and the finale.
+// Each slide parks the camera somewhere; scroll snapping lands on them and the
+// camera eases between neighbours. `morph` drives the particles:
+// 0 = sphere (hero), 1 = vortex (projects), 2 = name (finale).
 export function useLayout(projectCount, compact) {
   return useMemo(() => {
     const spacing = compact ? 5 : 5.6;
@@ -21,42 +21,31 @@ export function useLayout(projectCount, compact) {
     const tunnelStart = 2;
     const tunnelEnd = lastZ - 6;
     const finaleZ = tunnelEnd - 8;
-    const keys = [
-      [0, compact ? 8.5 : 7],
-      [ACTS.hero, compact ? 8.5 : 7],
-      [ACTS.explode, 1],
-      [ACTS.tunnelEnd, lastZ - 1.5],
-      [ACTS.finale, finaleZ + (compact ? 10 : 7.5)],
-      [1, finaleZ + (compact ? 10 : 7.5)],
+
+    const heroZ = compact ? 8.5 : 7;
+    const slides = [
+      { pos: [0, 0.35, heroZ], look: [0, 0.3, heroZ - 8], morph: 0 },
+      ...panels.map((p) => ({
+        pos: [compact ? 0 : p.x * 0.4, 0.35, p.z + (compact ? 4.6 : 4.2)],
+        look: [compact ? 0 : p.x * 0.85, 0.3, p.z],
+        morph: 1,
+      })),
+      { pos: [0, 0.35, finaleZ + (compact ? 10 : 7.5)], look: [0, 0.5, finaleZ], morph: 2 },
     ];
-    return { panels, spacing, tunnelStart, tunnelEnd, finaleZ, keys };
+    return { panels, spacing, tunnelStart, tunnelEnd, finaleZ, slides };
   }, [projectCount, compact]);
 }
 
-function lerpKeys(keys, s) {
-  for (let i = 1; i < keys.length; i++) {
-    if (s <= keys[i][0]) {
-      const [s0, v0] = keys[i - 1], [s1, v1] = keys[i];
-      const t = s1 === s0 ? 1 : (s - s0) / (s1 - s0);
-      return MathUtils.lerp(v0, v1, t * t * (3 - 2 * t));
-    }
-  }
-  return keys[keys.length - 1][1];
-}
+const ease = (t) => t * t * (3 - 2 * t);
 
-export function morphFor(s) {
-  if (s <= ACTS.hero) return 0;
-  if (s <= ACTS.explode) return (s - ACTS.hero) / (ACTS.explode - ACTS.hero);
-  if (s <= ACTS.tunnelEnd) return 1;
-  if (s <= ACTS.finale) return 1 + (s - ACTS.tunnelEnd) / (ACTS.finale - ACTS.tunnelEnd);
-  return 2;
-}
-
-function Rig({ progress, velocity, layout, camZ, mouse, morph, reduceMotion, onSection }) {
+function Rig({ progress, velocity, layout, camZ, mouse, morph, reduceMotion, compact, onSection }) {
   const { camera, pointer } = useThree();
   const last = useRef("");
   const tmp = useMemo(() => new Vector3(), []);
-  const smooth = useRef({ s: 0 });
+  const pos = useMemo(() => new Vector3(), []);
+  const look = useMemo(() => new Vector3(), []);
+  const lookNow = useRef(null);
+  const smooth = useRef(0);
   // Only push particles around once a real pointer has moved.
   const active = useRef(false);
   useEffect(() => {
@@ -66,51 +55,51 @@ function Rig({ progress, velocity, layout, camZ, mouse, morph, reduceMotion, onS
   }, []);
 
   useFrame((_, dt) => {
-    const k = reduceMotion ? 1 : 1 - Math.exp(-Math.min(dt, 0.05) * 3);
-    smooth.current.s = MathUtils.lerp(smooth.current.s, progress.current, k);
-    const s = smooth.current.s;
-    morph.current = morphFor(s);
+    const { slides } = layout;
+    const n = slides.length;
+    const target = progress.current * (n - 1);
+    const k = reduceMotion ? 1 : 1 - Math.exp(-Math.min(dt, 0.05) * 6);
+    smooth.current = MathUtils.lerp(smooth.current, target, k);
+    const f = Math.min(n - 1, Math.max(0, smooth.current));
+    const i = Math.min(n - 2, Math.floor(f));
+    const t = ease(f - i);
+    const a = slides[i], b = slides[i + 1];
 
-    const z = lerpKeys(layout.keys, s);
-    const v = velocity.current;
-    camera.position.set(
-      MathUtils.lerp(camera.position.x, pointer.x * 0.45, k),
-      MathUtils.lerp(camera.position.y, 0.35 + pointer.y * 0.25, k),
-      z
-    );
-    camera.lookAt(camera.position.x * 0.4, 0.3, z - 8);
-    // Warp: speed widens the lens and banks the camera inside the tunnel.
-    const inTunnel = morph.current > 0.5 && morph.current < 1.5 ? 1 : 0;
-    camera.rotation.z = inTunnel * (Math.sin(z * 0.08) * 0.08 + v * 0.25);
-    const fov = 55 + v * 28;
+    morph.current = MathUtils.lerp(a.morph, b.morph, t);
+    pos.set(...a.pos).lerp(tmp.set(...b.pos), t);
+    look.set(...a.look).lerp(tmp.set(...b.look), t);
+    if (!lookNow.current) lookNow.current = look.clone();
+    lookNow.current.copy(look);
+
+    const v = reduceMotion ? 0 : velocity.current;
+    const sway = reduceMotion || compact ? 0 : 1;
+    camera.position.set(pos.x + pointer.x * 0.35 * sway, pos.y + pointer.y * 0.2 * sway, pos.z);
+    camera.lookAt(lookNow.current);
+    // A little bank and lens warp while travelling, never on phones.
+    const travel = Math.sin(Math.PI * (f - Math.floor(f)));
+    camera.rotation.z += sway * (morph.current > 0.5 && morph.current < 1.5 ? travel * 0.04 * Math.sign(b.pos[0] - a.pos[0] || 1) : 0);
+    const fov = 55 + sway * Math.min(v, 1) * 16;
     if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
-    camZ.current = z;
+    camZ.current = pos.z;
 
-    // Pointer projected onto a plane in front of the camera.
-    tmp.set(pointer.x, pointer.y, 0.5).unproject(camera).sub(camera.position).normalize();
-    const depth = morph.current < 0.5 ? camera.position.z : morph.current > 1.5 ? camera.position.z - layout.finaleZ : 6;
-    if (active.current) mouse.current.copy(camera.position).addScaledVector(tmp, depth / Math.max(0.2, -tmp.z));
-    else mouse.current.set(0, 0, 1000);
+    // Pointer projected into the scene for the particle push.
+    if (active.current) {
+      tmp.set(pointer.x, pointer.y, 0.5).unproject(camera).sub(camera.position).normalize();
+      const depth = Math.max(1, camera.position.z - lookNow.current.z);
+      mouse.current.copy(camera.position).addScaledVector(tmp, depth / Math.max(0.2, -tmp.z));
+    } else mouse.current.set(0, 0, 1000);
 
-    // Which section is in view, for the HTML overlay.
-    let section = "hero";
-    if (morph.current >= 0.5) section = "work";
-    if (morph.current >= 1.5) section = "finale";
-    let index = -1;
-    if (section === "work") {
-      let best = Infinity;
-      layout.panels.forEach((p, i) => {
-        const d = Math.abs(z - 5 - p.z);
-        if (d < best && z - 1 > p.z) { best = d; index = i; }
-      });
-    }
+    // Which slide is in view, for the HTML overlay.
+    const r = Math.round(f);
+    const section = r === 0 ? "hero" : r === n - 1 ? "finale" : "work";
+    const index = section === "work" ? r - 1 : -1;
     const key = `${section}:${index}`;
     if (key !== last.current) { last.current = key; onSection({ section, index }); }
   });
   return null;
 }
 
-export default function Scene({ data, progress, velocity, onOpen, onSection, reduceMotion, compact }) {
+export default function Scene({ data, progress, velocity, onOpen, onSection, reduceMotion, compact, active = -1 }) {
   const camZ = useRef(0);
   const mouse = useRef(new Vector3(0, 0, -100));
   const morph = useRef(0);
@@ -132,7 +121,7 @@ export default function Scene({ data, progress, velocity, onOpen, onSection, red
       <color attach="background" args={["#05060a"]} />
       <fog attach="fog" args={["#05060a", 10, 30]} />
       <Rig progress={progress} velocity={velocity} layout={layout} camZ={camZ} mouse={mouse}
-        morph={morph} reduceMotion={reduceMotion} onSection={onSection} />
+        morph={morph} reduceMotion={reduceMotion} compact={compact} onSection={onSection} />
       <Particles formations={formations} morph={morph} velocity={velocity} mouse={mouse} reduceMotion={reduceMotion} />
       {data.projects.map((p, i) => (
         <ProjectPanel
@@ -140,12 +129,13 @@ export default function Scene({ data, progress, velocity, onOpen, onSection, red
           project={p}
           index={i}
           side={layout.panels[i].side}
-          position={[layout.panels[i].x, 0.3, layout.panels[i].z]}
+          position={[layout.panels[i].x, compact ? 0.75 : 0.3, layout.panels[i].z]}
           size={compact ? [2.6, 1.46] : [3, 1.69]}
           camZ={camZ}
           morph={morph}
           onOpen={onOpen}
           compact={compact}
+          focused={i === active}
         />
       ))}
     </>

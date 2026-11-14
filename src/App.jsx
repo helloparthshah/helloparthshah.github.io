@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { loadData } from "./data";
 import { SITE, COPY } from "./site.config";
+import { createWheelStepper } from "./wheelStepper";
 
 const Stage = lazy(() => import("./Stage"));
 
@@ -54,6 +55,26 @@ export default function App() {
     return () => cancelAnimationFrame(raf);
   }, []);
 
+  // Desktop: one deliberate wheel or trackpad flick = one slide. Touch screens
+  // use native scroll snapping instead (see .slide in styles.css).
+  useEffect(() => {
+    if (listView || selected || !window.matchMedia("(pointer: fine)").matches) return;
+    const h = () => window.innerHeight;
+    const handle = createWheelStepper((dir) => {
+      const current = Math.round(window.scrollY / h());
+      const max = Math.round((document.documentElement.scrollHeight - h()) / h());
+      const next = Math.min(max, Math.max(0, current + dir));
+      if (next !== current) window.scrollTo({ top: next * h(), behavior: reduceMotion ? "auto" : "smooth" });
+    });
+    const onWheel = (e) => {
+      if (e.ctrlKey) return; // pinch / ctrl+wheel zoom
+      e.preventDefault();
+      handle(e.deltaMode === 1 ? e.deltaY * 32 : e.deltaY, performance.now());
+    };
+    window.addEventListener("wheel", onWheel, { passive: false });
+    return () => window.removeEventListener("wheel", onWheel);
+  }, [listView, selected, reduceMotion]);
+
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && setSelected(null);
     window.addEventListener("keydown", onKey);
@@ -77,8 +98,8 @@ export default function App() {
     ...Object.entries(config.footerLinks ?? {}).filter(([k]) => /github|linkedin/i.test(k)),
   ] : [];
   const current = section.index >= 0 ? projects[section.index] : null;
-  // Scroll length grows with the number of projects.
-  const pages = 3 + projects.length * 0.9;
+  // One snap point per slide: hero, each project, finale.
+  const slides = projects.length + 2;
 
   return (
     <>
@@ -101,10 +122,12 @@ export default function App() {
           {data && (
             <Suspense fallback={null}>
               <Stage data={data} progress={progress} velocity={velocity} onOpen={setSelected}
-                onSection={setSection} reduceMotion={reduceMotion} compact={compact} />
+                onSection={setSection} reduceMotion={reduceMotion} compact={compact} active={section.index} />
             </Suspense>
           )}
-          <div className="scroll-space" style={{ height: `${pages * 100}vh` }} aria-hidden="true" />
+          <div className="slides" aria-hidden="true">
+            {Array.from({ length: slides }, (_, i) => <div key={i} className="slide" />)}
+          </div>
           <div className="progress"><div ref={bar} /></div>
 
           <header className={`hero ${section.section === "hero" ? "show" : ""}`}>

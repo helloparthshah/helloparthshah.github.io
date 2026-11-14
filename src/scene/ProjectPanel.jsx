@@ -43,7 +43,7 @@ function placeholder(title) {
  * One project hanging in the corridor. Its screenshot loads only once the
  * camera gets close, tilts toward the pointer on hover, and opens on click.
  */
-export default function ProjectPanel({ project, index, position, side, size = [3.2, 1.8], camZ, morph, onOpen, compact }) {
+export default function ProjectPanel({ project, index, position, side, size = [3.2, 1.8], camZ, morph, onOpen, compact, focused }) {
   const group = useRef();
   const frame = useRef();
   const [texture, setTexture] = useState(null);
@@ -115,7 +115,7 @@ export default function ProjectPanel({ project, index, position, side, size = [3
         {/* Keyed so the shader is rebuilt once the screenshot arrives. */}
         <meshBasicMaterial key={tex ? tex.uuid : "empty"} map={tex} color={tex ? "#ffffff" : "#0d0f1a"} toneMapped={false} />
       </mesh>
-      {!compact && <>
+      {!compact && !focused && <>
       <Text font={monoMed} fontSize={0.12} letterSpacing={0.08} color="#5ef2ff"
         anchorX={anchor} anchorY="top" position={[textX, textY, 0]}>
         {`${String(index + 1).padStart(2, "0")}  ${project.featured ? "FEATURED" : "GITHUB PAGES"}`}

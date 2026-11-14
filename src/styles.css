@@ -23,15 +23,33 @@ a { color: inherit; }
 
 button { font: inherit; color: inherit; }
 
+html:has(.slides) {
+  scroll-snap-type: y mandatory;
+}
+
 .stage {
   position: fixed !important;
-  inset: 0;
+  top: 0;
+  left: 0;
   width: 100vw !important;
+  /* Large viewport height, so the canvas doesn't resize as the phone's address bar shows and hides. */
   height: 100vh !important;
+  height: 100lvh !important;
   touch-action: pan-y;
 }
 
-.scroll-space { pointer-events: none; }
+.slides { pointer-events: none; }
+
+.slide {
+  height: 100vh;
+  height: 100svh;
+  scroll-snap-align: start;
+}
+
+/* On touch screens one swipe moves exactly one slide. */
+@media (pointer: coarse) {
+  .slide { scroll-snap-stop: always; }
+}
 
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
