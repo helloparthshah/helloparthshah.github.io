@@ -3,13 +3,16 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { MathUtils, Vector3 } from "three";
 import Particles from "./Particles";
 import ProjectPanel from "./ProjectPanel";
+import YearGate from "./YearGate";
 import { buildFormations } from "./formations";
 
 // The scroll is a series of slides: the hero, one per project, and the finale.
 // Each slide parks the camera somewhere; scroll snapping lands on them and the
 // camera eases between neighbours. `morph` drives the particles:
 // 0 = sphere (hero), 1 = vortex (projects), 2 = name (finale).
-export function useLayout(projectCount, compact) {
+export function useLayout(projects, compact) {
+  const projectCount = projects.length;
+  const yearsKey = projects.map((p) => `${p.featured ? "f" : ""}${p.year ?? ""}`).join(",");
   return useMemo(() => {
     const spacing = compact ? 5 : 5.6;
     const firstZ = -8;
@@ -18,6 +21,15 @@ export function useLayout(projectCount, compact) {
       return { z: firstZ - i * spacing, x: compact ? 0 : side * 2.25, side };
     });
     const lastZ = panels.length ? panels[panels.length - 1].z : firstZ;
+    // A year gate before the first non-featured project of each year.
+    const years = [];
+    projects.forEach((p, i) => {
+      if (p.featured || !p.year) return;
+      const prev = projects[i - 1];
+      if (!prev || prev.featured || prev.year !== p.year) {
+        years.push({ year: p.year, z: panels[i].z + spacing * 0.5 });
+      }
+    });
     const tunnelStart = 2;
     const tunnelEnd = lastZ - 6;
     const finaleZ = tunnelEnd - 8;
@@ -32,8 +44,9 @@ export function useLayout(projectCount, compact) {
       })),
       { pos: [0, 0.35, finaleZ + (compact ? 10 : 7.5)], look: [0, 0.5, finaleZ], morph: 2 },
     ];
-    return { panels, spacing, tunnelStart, tunnelEnd, finaleZ, slides };
-  }, [projectCount, compact]);
+    return { panels, spacing, tunnelStart, tunnelEnd, finaleZ, slides, years };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectCount, yearsKey, compact]);
 }
 
 const ease = (t) => t * t * (3 - 2 * t);
@@ -103,7 +116,7 @@ export default function Scene({ data, progress, velocity, onOpen, onSection, red
   const camZ = useRef(0);
   const mouse = useRef(new Vector3(0, 0, -100));
   const morph = useRef(0);
-  const layout = useLayout(data.projects.length, compact);
+  const layout = useLayout(data.projects, compact);
   const formations = useMemo(
     () => buildFormations({
       count: compact ? 26000 : 60000,
@@ -123,6 +136,9 @@ export default function Scene({ data, progress, velocity, onOpen, onSection, red
       <Rig progress={progress} velocity={velocity} layout={layout} camZ={camZ} mouse={mouse}
         morph={morph} reduceMotion={reduceMotion} compact={compact} onSection={onSection} />
       <Particles formations={formations} morph={morph} velocity={velocity} mouse={mouse} reduceMotion={reduceMotion} />
+      {layout.years.map((y) => (
+        <YearGate key={y.year} year={y.year} z={y.z} morph={morph} compact={compact} />
+      ))}
       {data.projects.map((p, i) => (
         <ProjectPanel
           key={p.id}
@@ -136,6 +152,7 @@ export default function Scene({ data, progress, velocity, onOpen, onSection, red
           onOpen={onOpen}
           compact={compact}
           focused={i === active}
+          reduceMotion={reduceMotion}
         />
       ))}
     </>

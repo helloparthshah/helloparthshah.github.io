@@ -137,7 +137,11 @@ export default function App() {
           </header>
 
           <div className={`caption ${section.section === "work" ? "show" : ""}`} aria-live="polite">
-            <span className="label">{COPY.workLabel} · {String(section.index + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}</span>
+            <span className="label">
+              {COPY.workLabel} · {String(section.index + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}
+              {current?.year ? ` · ${current.year}` : ""}
+              {current?.stars ? <span className="stars"> · ★ {current.stars}</span> : null}
+            </span>
             <strong>{current?.title ?? ""}</strong>
             <span className="sub">{current?.bullets?.[0] ?? COPY.workHint}</span>
             {current && <button type="button" onClick={() => setSelected(current)}>Details →</button>}
@@ -175,7 +179,7 @@ function ListView({ projects, config, onOpen }) {
             {p.image && <img src={p.image} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} />}
             <span className="card-body">
               <strong>{p.title}</strong>
-              <span className="sub">{p.dates}</span>
+              <span className="sub">{p.dates}{p.stars ? <span className="stars"> · ★ {p.stars}</span> : null}</span>
               <span>{p.bullets[0]}</span>
             </span>
           </button>

@@ -342,3 +342,5 @@ html:has(.slides) {
   .hero, .caption, .finale { transition: none; transform: none; }
   .hint span { animation: none; }
 }
+
+.stars { color: #ffd56b; }

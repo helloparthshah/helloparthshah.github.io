@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Text } from "@react-three/drei";
-import { CanvasTexture, Color, MathUtils, SRGBColorSpace, Texture } from "three";
+import { CanvasTexture, Color, MathUtils, Shape, SRGBColorSpace, Texture } from "three";
 import firaSemi from "@fontsource/fira-sans/files/fira-sans-latin-600-normal.woff?url";
 import monoMed from "@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff?url";
+import StarSparkles from "./StarSparkles";
 
 // Decode and downscale screenshots off the main thread, so flying up to a
 // panel doesn't stall a frame.
@@ -19,6 +20,18 @@ async function loadScreenshot(url) {
   t.needsUpdate = true;
   return t;
 }
+
+// A five-pointed star, drawn as geometry so the 3D text needs no extra glyphs.
+const STAR = (() => {
+  const shape = new Shape();
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 ? 0.024 : 0.058;
+    const a = Math.PI / 2 + (i * Math.PI) / 5;
+    const x = Math.cos(a) * r, y = Math.sin(a) * r;
+    i ? shape.lineTo(x, y) : shape.moveTo(x, y);
+  }
+  return shape;
+})();
 
 // Placeholder art for projects without a screenshot: the title on a dark board.
 function placeholder(title) {
@@ -43,7 +56,7 @@ function placeholder(title) {
  * One project hanging in the corridor. Its screenshot loads only once the
  * camera gets close, tilts toward the pointer on hover, and opens on click.
  */
-export default function ProjectPanel({ project, index, position, side, size = [3.2, 1.8], camZ, morph, onOpen, compact, focused }) {
+export default function ProjectPanel({ project, index, position, side, size = [3.2, 1.8], camZ, morph, onOpen, compact, focused, reduceMotion }) {
   const group = useRef();
   const frame = useRef();
   const [texture, setTexture] = useState(null);
@@ -131,6 +144,22 @@ export default function ProjectPanel({ project, index, position, side, size = [3
         {/* Keyed so the shader is rebuilt once the screenshot arrives. */}
         <meshBasicMaterial key={tex ? tex.uuid : "empty"} map={tex} color={tex ? "#ffffff" : "#0d0f1a"} toneMapped={false} />
       </mesh>
+      {project.stars > 0 && (
+        <group position={[w / 2 - 0.06, h / 2 + 0.06, 0.02]}>
+          <mesh position={[-0.2, 0, -0.005]}>
+            <planeGeometry args={[0.46, 0.2]} />
+            <meshBasicMaterial color="#1a1406" transparent opacity={0.85} toneMapped={false} />
+          </mesh>
+          <mesh position={[-0.35, 0, 0]}>
+            <shapeGeometry args={[STAR]} />
+            <meshBasicMaterial color="#ffd56b" toneMapped={false} />
+          </mesh>
+          <Text font={monoMed} fontSize={0.11} color="#ffd56b" anchorX="right" anchorY="middle" position={[-0.06, 0, 0]}>
+            {project.stars >= 1000 ? `${(project.stars / 1000).toFixed(1)}k` : String(project.stars)}
+          </Text>
+        </group>
+      )}
+      <StarSparkles stars={project.stars} width={w} height={h} reduceMotion={reduceMotion} />
       {!compact && !focused && <>
       <Text font={monoMed} fontSize={0.12} letterSpacing={0.08} color="#5ef2ff"
         anchorX={anchor} anchorY="top" position={[textX, textY, 0]}>
