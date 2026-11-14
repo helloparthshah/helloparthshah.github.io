@@ -6,23 +6,24 @@ import firaSemi from "@fontsource/fira-sans/files/fira-sans-latin-600-normal.wof
 
 // A huge year floating in the tunnel, framed by a glowing ring, that the
 // camera flies through on its way to that year's projects.
-export default function YearGate({ year, z, morph, compact }) {
+export default function YearGate({ year, z, morph, compact, parkedNext, parkedPrev }) {
   const group = useRef();
   const text = useRef();
   const ring = useRef();
-  const radius = compact ? 2.4 : 3.4;
-  const ringArgs = useMemo(() => [radius, 0.025, 8, 160], [radius]);
+  // Sized to fit a phone's narrow view as the camera approaches.
+  const radius = compact ? 1.25 : 3.4;
+  const ringArgs = useMemo(() => [radius, compact ? 0.012 : 0.025, 8, 160], [radius, compact]);
 
   useFrame(({ camera, clock }) => {
     if (!group.current) return;
     // Only shows while travelling between the slides on either side of it:
-    // hidden when parked at the previous slide (about 7 units away) and
-    // gone by the time the camera parks at the next one (about 1.4 away).
+    // hidden while parked at the previous slide (parkedPrev away) and gone by
+    // the time the camera parks at the next one (parkedNext away).
     const m = morph.current;
     const present = MathUtils.smoothstep(m, 0.6, 0.95) * (1 - MathUtils.smoothstep(m, 1.15, 1.4));
     const d = camera.position.z - z;
-    const near = MathUtils.smoothstep(d, 1.6, 3.2);
-    const far = 1 - MathUtils.smoothstep(d, 5.2, 6.6);
+    const near = MathUtils.smoothstep(d, parkedNext + 0.3, parkedNext + 1.4);
+    const far = 1 - MathUtils.smoothstep(d, parkedPrev - 1.6, parkedPrev - 0.3);
     const o = present * near * far;
     group.current.visible = o > 0.01;
     if (text.current) {
@@ -39,7 +40,7 @@ export default function YearGate({ year, z, morph, compact }) {
       <Text
         ref={text}
         font={firaSemi}
-        fontSize={compact ? 1.5 : 2.4}
+        fontSize={compact ? 0.62 : 2.4}
         letterSpacing={0.04}
         anchorX="center"
         anchorY="middle"

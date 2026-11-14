@@ -35,16 +35,17 @@ export function useLayout(projects, compact) {
     const finaleZ = tunnelEnd - 8;
 
     const heroZ = compact ? 8.5 : 7;
+    const viewDist = compact ? 4.6 : 4.2; // how far in front of a screen the camera parks
     const slides = [
       { pos: [0, 0.35, heroZ], look: [0, 0.3, heroZ - 8], morph: 0 },
       ...panels.map((p) => ({
-        pos: [compact ? 0 : p.x * 0.4, 0.35, p.z + (compact ? 4.6 : 4.2)],
+        pos: [compact ? 0 : p.x * 0.4, 0.35, p.z + viewDist],
         look: [compact ? 0 : p.x * 0.85, 0.3, p.z],
         morph: 1,
       })),
       { pos: [0, 0.35, finaleZ + (compact ? 10 : 7.5)], look: [0, 0.5, finaleZ], morph: 2 },
     ];
-    return { panels, spacing, tunnelStart, tunnelEnd, finaleZ, slides, years };
+    return { panels, spacing, tunnelStart, tunnelEnd, finaleZ, slides, years, viewDist };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectCount, yearsKey, compact]);
 }
@@ -137,7 +138,8 @@ export default function Scene({ data, progress, velocity, onOpen, onSection, red
         morph={morph} reduceMotion={reduceMotion} compact={compact} onSection={onSection} />
       <Particles formations={formations} morph={morph} velocity={velocity} mouse={mouse} reduceMotion={reduceMotion} />
       {layout.years.map((y) => (
-        <YearGate key={y.year} year={y.year} z={y.z} morph={morph} compact={compact} />
+        <YearGate key={y.year} year={y.year} z={y.z} morph={morph} compact={compact}
+          parkedNext={layout.viewDist - layout.spacing * 0.5} parkedPrev={layout.viewDist + layout.spacing * 0.5} />
       ))}
       {data.projects.map((p, i) => (
         <ProjectPanel

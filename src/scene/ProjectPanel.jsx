@@ -99,9 +99,16 @@ export default function ProjectPanel({ project, index, position, side, size = [3
     // shrink away as it collapses into the finale.
     const m = morph.current;
     const present = MathUtils.smoothstep(m, 0.55, 0.95) * (1 - MathUtils.smoothstep(m, 1.15, 1.45));
-    g.visible = present > 0.01;
-    const s = (hovered ? 1.05 : 1) * present;
-    g.scale.x = g.scale.y = g.scale.z = MathUtils.lerp(g.scale.x, s, k);
+    // Shrink and drop out of the way as the camera arrives, instead of the
+    // camera flying through the screen (on phones every screen is centred).
+    const dist = camZ.current - position[2];
+    const clear = compact ? MathUtils.smoothstep(dist, 1.6, 3.9) : MathUtils.smoothstep(dist, 0.8, 2.6);
+    g.position.y = position[1] - (1 - clear) * 1.2;
+    const target = (hovered ? 1.05 : 1) * present * clear;
+    g.visible = target > 0.01 || g.scale.x > 0.01;
+    // Follow the camera closely while it's near, so the screen never clips the lens.
+    const kk = dist < 3 ? 1 - Math.exp(-dt * 20) : k;
+    g.scale.x = g.scale.y = g.scale.z = MathUtils.lerp(g.scale.x, target, kk);
     frame.current.color.lerp(hovered ? accent : idle, k);
   });
 
