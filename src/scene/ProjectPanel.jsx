@@ -92,12 +92,28 @@ export default function ProjectPanel({ project, index, position, side, size = [3
     frame.current.color.lerp(hovered ? accent : idle, k);
   });
 
-  const [w, h] = size;
+  const tex = texture && texture !== "loading" ? texture : null;
+  // Shape the screen to the screenshot instead of stretching it. The box is
+  // `size` wide; tall images may grow up to 1.35x the box height. Shapes beyond
+  // the limits are cropped from the top (like object-fit: cover).
+  const [bw, bh] = size;
+  const img = tex?.image;
+  const raw = img && img.width && img.height ? img.width / img.height : bw / bh;
+  const MIN = 0.55, MAX = 2.4;
+  const aspect = Math.min(MAX, Math.max(MIN, raw));
+  let w, h;
+  if (aspect >= bw / bh) { w = bw; h = bw / aspect; }
+  else { h = Math.min(bh * 1.35, bw / aspect); w = h * aspect; }
+  if (tex) {
+    const sx = Math.min(1, aspect / raw); // visible fraction of width
+    const sy = Math.min(1, raw / aspect); // visible fraction of height
+    tex.repeat.set(sx, sy);
+    tex.offset.set((1 - sx) / 2, 1 - sy); // keep the top of the image
+  }
   // Labels sit under the panel, aligned to its outer edge.
   const anchor = compact || side < 0 ? "left" : "right";
   const textX = anchor === "left" ? -w / 2 : w / 2;
   const textY = -h / 2 - 0.22;
-  const tex = texture && texture !== "loading" ? texture : null;
 
   return (
     <group ref={group} position={position}>
